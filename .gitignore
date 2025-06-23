@@ -1,0 +1,8 @@
+# Top-level .gitignore
+node_modules/
+.env
+.env.local
+__pycache__/
+*.sqlite3
+*.db
+.next/
