@@ -3,8 +3,8 @@ import "./globals.css"
 import Navbar from "@/components/Navbar" // ✅ import it globally
 
 export const metadata: Metadata = {
-  title: "Case Manager",
-  description: "A case management system for iOS",
+  title: "Ticket (Case) Classifier",
+  description: "Ticket (Case) Classifier",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
