@@ -1,7 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
 
-
 type Case = {
   id: number
   description: string
@@ -13,6 +12,7 @@ type Case = {
   resolved_at: string | null
   escalation_level: number
 }
+
 const BASE_URL = "https://llm-case-classifier-app.onrender.com"
 
 export default function Dashboard() {
@@ -27,10 +27,9 @@ export default function Dashboard() {
       const params = new URLSearchParams()
       if (statusFilter) params.append("status", statusFilter)
       if (priorityFilter) params.append("priority", priorityFilter)
-    const res = await fetch(`${BASE_URL}/cases/filter?${params.toString()}`)
-
-
+      const res = await fetch(`${BASE_URL}/cases/filter?${params.toString()}`)
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
+
       const data = await res.json()
       const filtered = data.filter((c: Case) =>
         c.description.toLowerCase().includes(search.toLowerCase())
@@ -48,7 +47,7 @@ export default function Dashboard() {
 
   const resolveCase = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/cases/${id}/resolve`, { method: "PATCH" })
+      const res = await fetch(`${BASE_URL}/cases/${id}/resolve`, { method: "PATCH" })
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
       await fetchCases()
     } catch (err) {
@@ -58,7 +57,7 @@ export default function Dashboard() {
 
   const escalateCase = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/cases/${id}/escalate`, { method: "PATCH" })
+      const res = await fetch(`${BASE_URL}/cases/${id}/escalate`, { method: "PATCH" })
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
       await fetchCases()
     } catch (err) {
@@ -68,7 +67,7 @@ export default function Dashboard() {
 
   const requestVerification = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/cases/${id}/verify`, { method: "POST" })
+      const res = await fetch(`${BASE_URL}/cases/${id}/verify`, { method: "POST" })
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
       await fetchCases()
     } catch (err) {
@@ -78,7 +77,6 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 pt-20">
-
       <h1 className="text-3xl font-bold mb-6">Case Management System</h1>
       <div className="bg-gray-900 shadow-md rounded-lg p-6">
         <div className="flex flex-col md:flex-row gap-4 mb-6">
