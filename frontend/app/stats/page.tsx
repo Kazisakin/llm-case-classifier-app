@@ -16,7 +16,7 @@ export default function StatsPage() {
   const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
-    fetch("http://localhost:8000/cases/stats")
+    fetch("https://llm-case-classifier-app.onrender.com")
       .then((res) => res.json())
       .then(setStats)
   }, [])

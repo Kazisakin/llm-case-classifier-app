@@ -15,7 +15,7 @@ export default function CaseForm() {
     if (!description.trim() || !email.trim() || !priority) return
     setLoading(true)
     try {
-      const res = await fetch("http://localhost:8000/classify-case", {
+      const res = await fetch("https://llm-case-classifier-app.onrender.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description, email, priority })
