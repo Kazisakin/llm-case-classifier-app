@@ -76,7 +76,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 text-white">
-      <h1 className="text-3xl font-bold mb-6 text-[#AFDDE5]">Case Management System</h1>
+      <h1 className="text-3xl font-bold mb-6 text-[#AFDDE5]">History</h1>
 
       <div className="bg-[#003135] shadow-md rounded-xl p-6 transition-all duration-300 hover:shadow-lg">
         {/* Filters */}
