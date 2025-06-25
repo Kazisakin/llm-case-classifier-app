@@ -1,13 +1,14 @@
 "use client"
 import CaseForm from "@/components/CaseForm"
 import Dashboard from "@/components/Dashboard"
-import Navbar from "@/components/Navbar"
+import Stats from "@/app/stats/page"
+
 export default function Home() {
   return (
-    <main className="max-w-6xl mx-auto p-6 pt-20 space-y-8">
-      <Navbar />
+    <div className="space-y-8 pb-12">
       <CaseForm />
       <Dashboard />
-    </main>
+      <Stats />
+    </div>
   )
 }
