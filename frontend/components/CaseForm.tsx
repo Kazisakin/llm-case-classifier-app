@@ -10,30 +10,31 @@ export default function CaseForm() {
   const [status, setStatus] = useState("")
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!description.trim() || !email.trim() || !priority) return
-    setLoading(true)
-    try {
-      const res = await fetch("https://llm-case-classifier-app.onrender.com", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, email, priority })
-      })
-      if (!res.ok) throw new Error("Failed to classify case")
-      const data = await res.json()
-      setResult(data.category)
-      setStatus(data.status)
-    } catch (error) {
-      setResult("Error")
-      setStatus("Failed")
-    } finally {
-      setLoading(false)
-      setDescription("")
-      setEmail("")
-      setPriority("Medium")
-    }
+ async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault()
+  if (!description.trim() || !email.trim() || !priority) return
+  setLoading(true)
+  try {
+    const res = await fetch("https://llm-case-classifier-app.onrender.com/classify-case", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description, email, priority })
+    })
+    if (!res.ok) throw new Error("Failed to classify case")
+    const data = await res.json()
+    setResult(data.category)
+    setStatus(data.status)
+  } catch (error) {
+    setResult("Error")
+    setStatus("Failed")
+  } finally {
+    setLoading(false)
+    setDescription("")
+    setEmail("")
+    setPriority("Medium")
   }
+}
+
 
   return (
     <div className="max-w-2xl mx-auto p-6">

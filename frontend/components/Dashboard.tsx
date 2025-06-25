@@ -13,6 +13,7 @@ type Case = {
   resolved_at: string | null
   escalation_level: number
 }
+const BASE_URL = "https://llm-case-classifier-app.onrender.com"
 
 export default function Dashboard() {
   const [cases, setCases] = useState<Case[]>([])
@@ -26,7 +27,9 @@ export default function Dashboard() {
       const params = new URLSearchParams()
       if (statusFilter) params.append("status", statusFilter)
       if (priorityFilter) params.append("priority", priorityFilter)
-      const res = await fetch(`http://localhost:8000/cases/filter?${params}`)
+    const res = await fetch(`${BASE_URL}/cases/filter?${params.toString()}`)
+
+
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
       const data = await res.json()
       const filtered = data.filter((c: Case) =>

@@ -15,11 +15,19 @@ type Stats = {
 export default function StatsPage() {
   const [stats, setStats] = useState<Stats | null>(null)
 
-  useEffect(() => {
-    fetch("https://llm-case-classifier-app.onrender.com")
-      .then((res) => res.json())
-      .then(setStats)
-  }, [])
+useEffect(() => {
+  const fetchStats = async () => {
+    try {
+      const res = await fetch("https://llm-case-classifier-app.onrender.com/cases/stats");
+      const data = await res.json();
+      setStats(data);
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+    }
+  };
+  fetchStats();
+}, []);
+
 
   if (!stats) return <LoadingScreen />
 
