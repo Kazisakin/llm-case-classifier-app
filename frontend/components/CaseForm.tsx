@@ -163,7 +163,7 @@ export default function CaseForm() {
     <div className="p-6 bg-white rounded-xl shadow-md">
       <h1 className="text-xl font-bold text-[#38BDF8] mb-6">Submit a Case</h1>
       {toast && (
-        <div className={`absolute top-4 right-4 p-3 rounded-lg shadow-md ${toast.type === "success" ? "bg-[#22C55E]" : "bg-[#EF4444]"} text-white text-sm font-medium animate-slide-in`}>
+        <div className={`fixed top-28 right-4 p-3 rounded-lg shadow-md ${toast.type === "success" ? "bg-[#22C55E]" : "bg-[#EF4444]"} text-white text-sm font-medium animate-slide-in z-60`}>
           {toast.message}
         </div>
       )}
