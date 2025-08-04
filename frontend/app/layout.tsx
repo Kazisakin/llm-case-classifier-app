@@ -4,15 +4,18 @@ import Navbar from "@/components/Navbar"
 
 export const metadata: Metadata = {
   title: "Ticket (Case) Classifier",
-  description: "Ticket (Case) Classifier",
+  description: "Automated case classification system built by a co-op student",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-[#024950] text-white min-h-screen">
+      <head>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      </head>
+      <body className="min-h-screen bg-[#F1F5F9]">
         <Navbar /> 
-        <main className="pt-24 px-4 max-w-7xl mx-auto">{children}</main>
+        <main className="pt-20 px-6 max-w-7xl mx-auto">{children}</main>
       </body>
     </html>
   )

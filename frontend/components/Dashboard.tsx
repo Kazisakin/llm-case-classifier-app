@@ -1,187 +1,173 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import Chart from "chart.js/auto"
 
-type Case = {
-  id: number
-  description: string
-  email: string
-  priority: string
-  category: string
-  status: string
-  created_at: string
-  resolved_at: string | null
-  escalation_level: number
-}
-
-const BASE_URL = "https://llm-case-classifier-app.onrender.com"
+const BASE_URL = "http://localhost:8000"
 
 export default function Dashboard() {
-  const [cases, setCases] = useState<Case[]>([])
-  const [statusFilter, setStatusFilter] = useState("")
-  const [priorityFilter, setPriorityFilter] = useState("")
-  const [search, setSearch] = useState("")
+  const [stats, setStats] = useState<{
+    total: number
+    resolved: number
+    pending: number
+    byCategory: { [key: string]: number }
+    byPriority: { [key: string]: number }
+    daily: { [key: string]: number }
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const fetchCases = async () => {
-    try {
-      const params = new URLSearchParams()
-      if (statusFilter) params.append("status", statusFilter)
-      if (priorityFilter) params.append("priority", priorityFilter)
-      const res = await fetch(`${BASE_URL}/cases/filter?${params.toString()}`)
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
-      const data = await res.json()
-      const filtered = data.filter((c: Case) =>
-        c.description.toLowerCase().includes(search.toLowerCase())
-      )
-      setCases(filtered)
-      setError(null)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error")
-    }
-  }
+  const categoryChartRef = useRef<HTMLCanvasElement>(null)
+  const priorityChartRef = useRef<HTMLCanvasElement>(null)
+  const dailyChartRef = useRef<HTMLCanvasElement>(null)
+  const [charts, setCharts] = useState<{ category?: Chart; priority?: Chart; daily?: Chart }>({})
 
   useEffect(() => {
-    fetchCases()
-  }, [statusFilter, priorityFilter, search])
-
-  const resolveCase = async (id: number) => {
-    try {
-      const res = await fetch(`${BASE_URL}/cases/${id}/resolve`, { method: "PATCH" })
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
-      await fetchCases()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error")
+    const fetchStats = async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`${BASE_URL}/cases/stats`)
+        if (!res.ok) {
+          const errorText = await res.text()
+          throw new Error(`Failed to fetch stats: ${res.status} ${errorText}`)
+        }
+        const data = await res.json()
+        console.log("Stats API response:", data)
+        setStats({
+          total: data.total ?? 0,
+          resolved: data.resolved ?? 0,
+          pending: data.pending ?? 0,
+          byCategory: data.byCategory ?? {},
+          byPriority: data.byPriority ?? {},
+          daily: data.daily ?? {},
+        })
+        setError(null)
+      } catch (err: unknown) {
+        console.error("Fetch stats error:", err)
+        setError(err instanceof Error ? err.message : "Failed to load statistics")
+        setStats({
+          total: 0,
+          resolved: 0,
+          pending: 0,
+          byCategory: {},
+          byPriority: {},
+          daily: {},
+        })
+      } finally {
+        setLoading(false)
+      }
     }
+    fetchStats()
+  }, [])
+
+  useEffect(() => {
+    if (loading || !stats || !categoryChartRef.current || !priorityChartRef.current || !dailyChartRef.current) return
+
+    const categoryChart = new Chart(categoryChartRef.current, {
+      type: "bar",
+      data: {
+        labels: Object.keys(stats.byCategory),
+        datasets: [{
+          label: "Cases by Category",
+          data: Object.values(stats.byCategory),
+          backgroundColor: "#0EA5E9",
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        scales: { y: { beginAtZero: true, ticks: { color: "#1E293B" } }, x: { ticks: { color: "#1E293B" } } },
+        plugins: { legend: { labels: { color: "#1E293B" } } },
+      },
+    })
+
+    const priorityChart = new Chart(priorityChartRef.current, {
+      type: "doughnut",
+      data: {
+        labels: Object.keys(stats.byPriority),
+        datasets: [{
+          label: "Cases by Priority",
+          data: Object.values(stats.byPriority),
+          backgroundColor: ["#22C55E", "#0EA5E9", "#EF4444"],
+        }],
+      },
+      options: { plugins: { legend: { labels: { color: "#1E293B" } } } },
+    })
+
+    const dailyChart = new Chart(dailyChartRef.current, {
+      type: "line",
+      data: {
+        labels: Object.keys(stats.daily),
+        datasets: [{
+          label: "Daily Cases",
+          data: Object.values(stats.daily),
+          borderColor: "#0EA5E9",
+          backgroundColor: "#0EA5E9",
+          fill: false,
+          tension: 0.3,
+        }],
+      },
+      options: {
+        scales: { y: { beginAtZero: true, ticks: { color: "#1E293B" } }, x: { ticks: { color: "#1E293B" } } },
+        plugins: { legend: { labels: { color: "#1E293B" } } },
+      },
+    })
+
+    setCharts({ category: categoryChart, priority: priorityChart, daily: dailyChart })
+
+    return () => {
+      categoryChart.destroy()
+      priorityChart.destroy()
+      dailyChart.destroy()
+    }
+  }, [loading, stats])
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-white rounded-xl shadow-md">
+        <h1 className="text-xl font-bold text-[#38BDF8] mb-6">Case Statistics</h1>
+        <p className="text-sm text-[#1E293B]">Loading statistics...</p>
+      </div>
+    )
   }
 
-  const escalateCase = async (id: number) => {
-    try {
-      const res = await fetch(`${BASE_URL}/cases/${id}/escalate`, { method: "PATCH" })
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
-      await fetchCases()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error")
-    }
-  }
-
-  const requestVerification = async (id: number) => {
-    try {
-      const res = await fetch(`${BASE_URL}/cases/${id}/verify`, { method: "POST" })
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`)
-      await fetchCases()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error")
-    }
+  if (error || !stats || (stats.total === 0 && Object.keys(stats.byCategory).length === 0)) {
+    return (
+      <div className="p-6 bg-white rounded-xl shadow-md">
+        <h1 className="text-xl font-bold text-[#38BDF8] mb-6">Case Statistics</h1>
+        <p className="text-sm text-[#EF4444]">{error || "No statistics available. Try submitting a case."}</p>
+      </div>
+    )
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 text-white">
-      <h1 className="text-3xl font-bold mb-6 text-[#AFDDE5]">History</h1>
-
-      <div className="bg-[#003135] shadow-md rounded-xl p-6 transition-all duration-300 hover:shadow-lg">
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <input
-            type="text"
-            placeholder="Search by description..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-1/3 bg-[#0F4A4F] border border-[#0FAAAF] rounded-lg p-3 placeholder-gray-400 focus:ring-2 focus:ring-[#AFDDE5] focus:outline-none transition"
-          />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-1/3 bg-[#0F4A4F] border border-[#0FAAAF] rounded-lg p-3 text-white focus:ring-2 focus:ring-[#AFDDE5] focus:outline-none transition"
-          >
-            <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Escalated">Escalated</option>
-            <option value="Verification Requested">Verification Requested</option>
-          </select>
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="w-full md:w-1/3 bg-[#0F4A4F] border border-[#0FAAAF] rounded-lg p-3 text-white focus:ring-2 focus:ring-[#AFDDE5] focus:outline-none transition"
-          >
-            <option value="">All Priorities</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-          </select>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className="mb-6 p-3 bg-[#964734] border border-[#0FAAAF] text-white rounded">
-            {error}
+    <div className="p-6 bg-white rounded-xl shadow-md">
+      <h1 className="text-xl font-bold text-[#38BDF8] mb-6">Case Statistics</h1>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4 bg-[#F1F5F9] rounded-lg">
+            <h3 className="text-sm font-medium text-[#38BDF8]">Total Cases</h3>
+            <p className="text-xl font-semibold text-[#1E293B]">{stats.total}</p>
           </div>
-        )}
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-separate border-spacing-0">
-            <thead className="bg-[#0F4A4F]">
-              <tr>
-                {["ID", "Description", "Email", "Priority", "Category", "Status", "Escalation", "Actions"].map((col) => (
-                  <th key={col} className="p-3 border-b border-[#0FAAAF] text-[#AFDDE5] font-medium">
-                    {col}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {cases.map((c) => (
-                <tr key={c.id} className="hover:bg-[#0FAAAF]/10 transition">
-                  <td className="p-3 border-b border-[#0FAAAF]">{c.id}</td>
-                  <td className="p-3 border-b border-[#0FAAAF]">{c.description}</td>
-                  <td className="p-3 border-b border-[#0FAAAF]">{c.email}</td>
-                  <td className="p-3 border-b border-[#0FAAAF]">{c.priority}</td>
-                  <td className="p-3 border-b border-[#0FAAAF]">{c.category}</td>
-                  <td className="p-3 border-b border-[#0FAAAF]">
-                    <span
-                      className={
-                        c.status === "Resolved"
-                          ? "text-[#56da7e]"
-                          : c.status === "Escalated"
-                          ? "text-[#f87171]"
-                          : c.status === "Verification Requested"
-                          ? "text-yellow-400"
-                          : "text-white"
-                      }
-                    >
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="p-3 border-b border-[#0FAAAF]">{c.escalation_level}</td>
-                  <td className="p-3 border-b border-[#0FAAAF] space-x-2">
-                    {c.status === "Pending" && (
-                      <>
-                        <button
-                          onClick={() => resolveCase(c.id)}
-                          className="bg-[#AFDDE5] text-[#003135] px-3 py-1 rounded hover:bg-[#0FAAAF] transition"
-                        >
-                          Resolve
-                        </button>
-                        <button
-                          onClick={() => escalateCase(c.id)}
-                          className="bg-[#964734] text-white px-3 py-1 rounded hover:bg-[#003135] transition"
-                        >
-                          Escalate
-                        </button>
-                        <button
-                          onClick={() => requestVerification(c.id)}
-                          className="bg-[#0FAAAF] text-white px-3 py-1 rounded hover:bg-[#AFDDE5] transition"
-                        >
-                          Verify
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="p-4 bg-[#F1F5F9] rounded-lg">
+            <h3 className="text-sm font-medium text-[#38BDF8]">Resolved Cases</h3>
+            <p className="text-xl font-semibold text-[#1E293B]">{stats.resolved}</p>
+          </div>
+          <div className="p-4 bg-[#F1F5F9] rounded-lg">
+            <h3 className="text-sm font-medium text-[#38BDF8]">Pending Cases</h3>
+            <p className="text-xl font-semibold text-[#1E293B]">{stats.pending}</p>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-sm font-medium text-[#38BDF8] mb-2">Cases by Category</h3>
+            <canvas ref={categoryChartRef} className="max-h-64"></canvas>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-[#38BDF8] mb-2">Cases by Priority</h3>
+            <canvas ref={priorityChartRef} className="max-h-64"></canvas>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-[#38BDF8] mb-2">Daily Cases</h3>
+            <canvas ref={dailyChartRef} className="max-h-64"></canvas>
+          </div>
         </div>
       </div>
     </div>

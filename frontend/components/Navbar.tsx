@@ -6,28 +6,28 @@ export default function Navbar() {
   const pathname = usePathname()
 
   return (
-    <nav className="bg-[#0F4A4F] shadow-md sticky top-0 z-50 w-full">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <nav className="bg-[#0EA5E9] shadow-md sticky top-0 z-50 w-full">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         <Link
           href="/"
-          className="text-white text-2xl font-bold tracking-tight hover:text-[#AFDDE5] transition duration-300"
+          className="text-white text-xl font-bold tracking-tight hover:text-[#F1F5F9] transition duration-200"
         >
           Case Manager
         </Link>
-        <div className="flex space-x-6">
+        <div className="flex items-center space-x-4">
           <Link
             href="/"
             className={`text-sm font-medium ${
-              pathname === "/" ? "text-white" : "text-[#AFDDE5] hover:text-white"
-            } transition duration-300 hover:underline`}
+              pathname === "/" ? "text-white" : "text-[#F1F5F9] hover:text-white"
+            } transition duration-200`}
           >
             Home
           </Link>
           <Link
             href="/stats"
             className={`text-sm font-medium ${
-              pathname === "/stats" ? "text-white" : "text-[#AFDDE5] hover:text-white"
-            } transition duration-300 hover:underline`}
+              pathname === "/stats" ? "text-white" : "text-[#F1F5F9] hover:text-white"
+            } transition duration-200`}
           >
             Statistics
           </Link>

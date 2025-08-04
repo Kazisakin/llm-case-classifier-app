@@ -81,13 +81,14 @@ def case_stats(db: Session = Depends(get_db)):
     daily_counts = db.query(func.date(Case.created_at), func.count()).group_by(func.date(Case.created_at)).all()
     avg_resolution_time = db.query(func.avg(func.julianday(Case.resolved_at) - func.julianday(Case.created_at))).filter(Case.resolved_at != None).scalar() or 0
     return {
-        "total_cases": total,
-        "resolved_cases": resolved,
-        "pending_cases": pending,
-        "category_breakdown": dict(category_counts),
-        "priority_breakdown": dict(priority_counts),
-        "daily_breakdown": dict(daily_counts),
-        "avg_resolution_time_days": avg_resolution_time
+        "total": total,
+        "resolved": resolved,
+        "pending": pending,
+        "byCategory": dict(category_counts),
+        "byPriority": dict(priority_counts),
+        "daily": dict(daily_counts),
+        # Optionally include avg_resolution_time if frontend adds support later
+        # "avg_resolution_time_days": avg_resolution_time
     }
 
 @app.get("/cases/insights")
