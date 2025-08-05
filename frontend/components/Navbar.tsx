@@ -14,7 +14,7 @@ export default function Navbar() {
         >
           Case Manager
         </Link>
-        <div className="flex items-center space-x-4">         
+        <div className="flex items-center space-x-4">1         
           
         </div>
       </div>

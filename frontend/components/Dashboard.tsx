@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react"
 import Chart from "chart.js/auto"
 
-const BASE_URL = "http://localhost:8000"
+const BASE_URL = "https://llm-case-classifier-app.onrender.com"
 
 export default function Dashboard() {
   const [stats, setStats] = useState<{
