@@ -14,23 +14,8 @@ export default function Navbar() {
         >
           Case Manager
         </Link>
-        <div className="flex items-center space-x-4">
-          <Link
-            href="/"
-            className={`text-sm font-medium ${
-              pathname === "/" ? "text-white" : "text-[#F1F5F9] hover:text-white"
-            } transition duration-200`}
-          >
-            Home
-          </Link>
-          <Link
-            href="/stats"
-            className={`text-sm font-medium ${
-              pathname === "/stats" ? "text-white" : "text-[#F1F5F9] hover:text-white"
-            } transition duration-200`}
-          >
-            Statistics
-          </Link>
+        <div className="flex items-center space-x-4">         
+          
         </div>
       </div>
     </nav>
