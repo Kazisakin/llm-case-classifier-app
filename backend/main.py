@@ -153,3 +153,7 @@ async def request_verification(case_id: int, db: Session = Depends(get_db)):
     db.refresh(case)
     send_email_notification(case.email, f"Verification requested for case {case.id}: {case.description}. Please provide ID.")
     return {"message": "Verification requested", "status": case.status}
+
+@app.get("/")
+def read_root():
+    return {"message": "LLM Case Classifier API is running!"}
