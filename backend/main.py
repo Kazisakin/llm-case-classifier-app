@@ -13,7 +13,7 @@ from logic import handle_category, send_email_notification
 
 load_dotenv()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-CLAUDE_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
+CLAUDE_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
 Base.metadata.create_all(bind=engine)
 
@@ -64,8 +64,12 @@ async def classify_case(case: CaseRequest, db: Session = Depends(get_db)):
         return CaseResponse(category=category, status=status, escalation_level=0)
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
-    except Exception:
-        raise HTTPException(status_code=503, detail="API service unavailable or server error")
+    except anthropic.APIError as ae:
+        # Surface the real Claude API error (bad model name, no credits, invalid
+        # key, etc.) instead of a generic 503 so it's actually debuggable.
+        raise HTTPException(status_code=503, detail=f"Claude API error: {ae}")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"API service unavailable or server error: {e}")
 
 @app.get("/cases", response_model=list[CaseOut])
 def get_all_cases(db: Session = Depends(get_db)):
