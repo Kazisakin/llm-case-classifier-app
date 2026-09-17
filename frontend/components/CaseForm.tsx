@@ -23,26 +23,25 @@ const exampleCases = [
 ]
 
 function StatusPill({ status }: { status: string }) {
-  const variant =
-    status === "Resolved" ? "pill-success" :
-    status === "Escalated" ? "pill-danger" :
-    status === "Verification Requested" ? "pill-warning" :
-    "pill-neutral"
+  const dot =
+    status === "Resolved" ? "dot-success" :
+    status === "Escalated" ? "dot-danger" :
+    status === "Verification Requested" ? "dot-warning" :
+    "dot-neutral"
   return (
-    <span className={`pill ${variant}`}>
-      <span className="pill-dot" />
+    <span className="pill">
+      <span className={`pill-dot ${dot}`} />
       {status}
     </span>
   )
 }
 
-function PriorityPill({ priority }: { priority: string }) {
-  const variant = priority === "High" ? "pill-danger" : priority === "Medium" ? "pill-warning" : "pill-neutral"
-  return <span className={`pill ${variant}`}>{priority}</span>
+function PriorityTag({ priority }: { priority: string }) {
+  return <span className="tag">{priority}</span>
 }
 
-function CategoryPill({ category }: { category: string }) {
-  return <span className="pill pill-brand">{category}</span>
+function CategoryTag({ category }: { category: string }) {
+  return <span className="tag">{category}</span>
 }
 
 export default function CaseForm() {
@@ -65,7 +64,7 @@ export default function CaseForm() {
     e.preventDefault()
     if (!description.trim() || !email.trim() || !priority) return
     setLoading(true)
-    setToast({ message: "Classifying with Claude... this can take a few seconds", type: "success" })
+    setToast({ message: "Classifying with Claude...", type: "success" })
     try {
       const res = await fetch(`${BASE_URL}/classify-case`, {
         method: "POST",
@@ -79,7 +78,7 @@ export default function CaseForm() {
       const data = await res.json()
       setResult(data.category)
       setStatus(data.status)
-      setToast({ message: "Case classified successfully!", type: "success" })
+      setToast({ message: "Case classified successfully", type: "success" })
       await fetchCases()
     } catch (err: unknown) {
       console.error("Classification error:", err)
@@ -161,41 +160,41 @@ export default function CaseForm() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       {toast && (
         <div
-          className={`fixed top-20 right-4 z-[60] px-4 py-3 rounded-xl shadow-lg text-white text-sm font-medium animate-slide-in ${
-            toast.type === "success" ? "bg-emerald-500" : "bg-red-500"
+          className={`fixed top-16 right-4 z-[60] px-3.5 py-2 rounded-md text-sm font-medium animate-slide-in border ${
+            toast.type === "success" ? "bg-gray-900 text-white border-gray-900" : "bg-white text-red-600 border-red-200"
           }`}
         >
           {toast.message}
         </div>
       )}
 
-      <div className="app-card p-6">
+      <div className="app-card p-5">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-semibold text-slate-900">New Case</h2>
-          <span className="pill pill-brand">AI triage</span>
+          <h2 className="text-[15px] font-semibold text-gray-900">New Case</h2>
+          <span className="text-xs text-gray-400">Auto-classified</span>
         </div>
-        <p className="text-sm text-slate-500 mb-5">Describe the issue -- Claude will classify and route it automatically.</p>
+        <p className="text-[13px] text-gray-500 mb-4">Describe the issue and it will be routed automatically.</p>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Description</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
             <textarea
-              className="w-full h-24 bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent transition resize-none text-sm"
+              className="w-full h-24 bg-white border border-gray-300 rounded-md p-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition resize-none text-sm"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the issue (e.g., login problems, payment issues)"
               required
             />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">Email</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
               <input
                 type="email"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent transition text-sm"
+                className="w-full bg-white border border-gray-300 rounded-md p-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition text-sm"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -203,9 +202,9 @@ export default function CaseForm() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">Priority</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Priority</label>
               <select
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent transition text-sm"
+                className="w-full bg-white border border-gray-300 rounded-md p-2.5 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition text-sm"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
               >
@@ -217,22 +216,22 @@ export default function CaseForm() {
           </div>
           <button
             type="submit"
-            className="w-full bg-[#0EA5E9] hover:bg-[#0284C7] text-white py-2.5 rounded-xl font-medium text-sm transition disabled:bg-slate-300 disabled:cursor-not-allowed shadow-sm"
+            className="w-full bg-gray-900 hover:bg-black text-white py-2 rounded-md font-medium text-sm transition disabled:bg-gray-300 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? "Classifying..." : "Classify Case"}
           </button>
         </form>
 
-        <div className="mt-5 pt-4 border-t border-slate-100">
-          <p className="text-xs font-medium text-slate-500 mb-2">Try an example</p>
-          <div className="flex flex-wrap gap-2">
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <p className="text-xs font-medium text-gray-400 mb-2">Try an example</p>
+          <div className="flex flex-wrap gap-1.5">
             {exampleCases.map((example) => (
               <button
                 key={example.label}
                 type="button"
                 onClick={() => setExampleCase(example)}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-medium transition"
+                className="px-2.5 py-1 bg-white border border-gray-200 hover:border-gray-400 text-gray-600 rounded-md text-xs font-medium transition"
               >
                 {example.label}
               </button>
@@ -241,37 +240,37 @@ export default function CaseForm() {
         </div>
 
         {result && (
-          <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-4 animate-fade-in">
+          <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-md flex items-center gap-5 animate-fade-in">
             <div>
-              <p className="text-xs text-slate-500 mb-1">Category</p>
-              <CategoryPill category={result} />
+              <p className="text-[11px] text-gray-400 mb-0.5">Category</p>
+              <CategoryTag category={result} />
             </div>
             <div>
-              <p className="text-xs text-slate-500 mb-1">Status</p>
+              <p className="text-[11px] text-gray-400 mb-0.5">Status</p>
               <StatusPill status={status} />
             </div>
           </div>
         )}
       </div>
 
-      <div className="app-card p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-900">Case History</h2>
-          <span className="text-xs text-slate-400">{cases.length} case{cases.length === 1 ? "" : "s"}</span>
+      <div className="app-card p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-[15px] font-semibold text-gray-900">Case History</h2>
+          <span className="text-xs text-gray-400">{cases.length} case{cases.length === 1 ? "" : "s"}</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2.5 mb-4">
+        <div className="flex flex-col sm:flex-row gap-2 mb-3">
           <input
             type="text"
             placeholder="Search by description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-1/3 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#0EA5E9] focus:outline-none focus:border-transparent transition text-sm"
+            className="w-full sm:w-1/3 bg-white border border-gray-300 rounded-md p-2 text-gray-900 placeholder-gray-400 focus:ring-1 focus:ring-gray-400 focus:outline-none transition text-sm"
           />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full sm:w-1/3 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:ring-2 focus:ring-[#0EA5E9] focus:outline-none focus:border-transparent transition text-sm"
+            className="w-full sm:w-1/3 bg-white border border-gray-300 rounded-md p-2 text-gray-900 focus:ring-1 focus:ring-gray-400 focus:outline-none transition text-sm"
           >
             <option value="">All Statuses</option>
             <option value="Pending">Pending</option>
@@ -282,7 +281,7 @@ export default function CaseForm() {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="w-full sm:w-1/3 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:ring-2 focus:ring-[#0EA5E9] focus:outline-none focus:border-transparent transition text-sm"
+            className="w-full sm:w-1/3 bg-white border border-gray-300 rounded-md p-2 text-gray-900 focus:ring-1 focus:ring-gray-400 focus:outline-none transition text-sm"
           >
             <option value="">All Priorities</option>
             <option value="Low">Low</option>
@@ -292,7 +291,7 @@ export default function CaseForm() {
         </div>
 
         {error && (
-          <div className="p-3 mb-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+          <div className="p-2.5 mb-3 bg-white border border-red-200 rounded-md text-red-600 text-sm">
             {error}
           </div>
         )}
@@ -300,20 +299,20 @@ export default function CaseForm() {
         {historyLoading ? (
           <div className="space-y-2">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-11 rounded-xl bg-slate-100 animate-pulse-soft" />
+              <div key={i} className="h-10 rounded-md bg-gray-100 animate-pulse-soft" />
             ))}
           </div>
         ) : cases.length === 0 ? (
-          <div className="text-center py-10 text-slate-400 text-sm">
+          <div className="text-center py-8 text-gray-400 text-sm">
             No cases match these filters yet.
           </div>
         ) : (
-          <div className="overflow-x-auto thin-scroll -mx-2">
+          <div className="overflow-x-auto thin-scroll -mx-1">
             <table className="w-full text-left border-separate border-spacing-0 text-sm">
               <thead>
                 <tr>
                   {["ID", "Description", "Email", "Priority", "Category", "Status", "Esc.", "Actions"].map((col) => (
-                    <th key={col} className="px-3 py-2 border-b border-slate-200 text-slate-400 font-medium text-xs uppercase tracking-wide">
+                    <th key={col} className="px-2.5 py-1.5 border-b border-gray-200 text-gray-400 font-medium text-[11px] uppercase tracking-wide">
                       {col}
                     </th>
                   ))}
@@ -321,34 +320,34 @@ export default function CaseForm() {
               </thead>
               <tbody>
                 {cases.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-3 py-2.5 border-b border-slate-100 text-slate-400">#{c.id}</td>
-                    <td className="px-3 py-2.5 border-b border-slate-100 max-w-[220px] truncate text-slate-700">{c.description}</td>
-                    <td className="px-3 py-2.5 border-b border-slate-100 text-slate-500">{c.email}</td>
-                    <td className="px-3 py-2.5 border-b border-slate-100"><PriorityPill priority={c.priority} /></td>
-                    <td className="px-3 py-2.5 border-b border-slate-100"><CategoryPill category={c.category} /></td>
-                    <td className="px-3 py-2.5 border-b border-slate-100"><StatusPill status={c.status} /></td>
-                    <td className="px-3 py-2.5 border-b border-slate-100 text-slate-500">{c.escalation_level}</td>
-                    <td className="px-3 py-2.5 border-b border-slate-100">
+                  <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-2.5 py-2 border-b border-gray-100 text-gray-400">#{c.id}</td>
+                    <td className="px-2.5 py-2 border-b border-gray-100 max-w-[200px] truncate text-gray-700">{c.description}</td>
+                    <td className="px-2.5 py-2 border-b border-gray-100 text-gray-500">{c.email}</td>
+                    <td className="px-2.5 py-2 border-b border-gray-100"><PriorityTag priority={c.priority} /></td>
+                    <td className="px-2.5 py-2 border-b border-gray-100"><CategoryTag category={c.category} /></td>
+                    <td className="px-2.5 py-2 border-b border-gray-100"><StatusPill status={c.status} /></td>
+                    <td className="px-2.5 py-2 border-b border-gray-100 text-gray-500">{c.escalation_level}</td>
+                    <td className="px-2.5 py-2 border-b border-gray-100">
                       {c.status === "Pending" && (
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-1">
                           <button
                             onClick={() => resolveCase(c.id)}
-                            className="px-2.5 py-1 bg-[#0EA5E9] text-white rounded-lg hover:bg-[#0284C7] transition text-xs font-medium disabled:bg-slate-300"
+                            className="px-2 py-1 border border-gray-300 hover:border-gray-900 hover:text-gray-900 text-gray-600 rounded text-xs font-medium transition disabled:opacity-40"
                             disabled={actionLoading[c.id] === "resolve"}
                           >
                             {actionLoading[c.id] === "resolve" ? "..." : "Resolve"}
                           </button>
                           <button
                             onClick={() => escalateCase(c.id)}
-                            className="px-2.5 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xs font-medium disabled:bg-slate-300"
+                            className="px-2 py-1 border border-gray-300 hover:border-red-500 hover:text-red-600 text-gray-600 rounded text-xs font-medium transition disabled:opacity-40"
                             disabled={actionLoading[c.id] === "escalate"}
                           >
                             {actionLoading[c.id] === "escalate" ? "..." : "Escalate"}
                           </button>
                           <button
                             onClick={() => requestVerification(c.id)}
-                            className="px-2.5 py-1 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition text-xs font-medium disabled:bg-slate-300"
+                            className="px-2 py-1 border border-gray-300 hover:border-gray-900 hover:text-gray-900 text-gray-600 rounded text-xs font-medium transition disabled:opacity-40"
                             disabled={actionLoading[c.id] === "verify"}
                           >
                             {actionLoading[c.id] === "verify" ? "..." : "Verify"}

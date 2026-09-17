@@ -79,16 +79,16 @@ export default function Dashboard() {
         datasets: [{
           label: "Cases",
           data: Object.values(stats.byCategory),
-          backgroundColor: "#0EA5E9",
-          borderRadius: 6,
-          maxBarThickness: 28,
+          backgroundColor: "#374151",
+          borderRadius: 3,
+          maxBarThickness: 22,
         }],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
-          y: { beginAtZero: true, ticks: { color: "#94A3B8" }, grid: { color: "#F1F5F9" } },
-          x: { ticks: { color: "#94A3B8" }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { color: "#9CA3AF", font: { size: 11 } }, grid: { color: "#F3F4F6" } },
+          x: { ticks: { color: "#9CA3AF", font: { size: 11 } }, grid: { display: false } },
         },
       },
     })
@@ -99,13 +99,13 @@ export default function Dashboard() {
         labels: Object.keys(stats.byPriority),
         datasets: [{
           data: Object.values(stats.byPriority),
-          backgroundColor: ["#EF4444", "#F59E0B", "#22C55E"],
+          backgroundColor: ["#111827", "#9CA3AF", "#D1D5DB"],
           borderWidth: 0,
         }],
       },
       options: {
-        plugins: { legend: { position: "bottom", labels: { color: "#64748B", boxWidth: 10, padding: 12 } } },
-        cutout: "65%",
+        plugins: { legend: { position: "bottom", labels: { color: "#6B7280", boxWidth: 8, font: { size: 11 }, padding: 12 } } },
+        cutout: "68%",
       },
     })
 
@@ -116,19 +116,19 @@ export default function Dashboard() {
         datasets: [{
           label: "Daily Cases",
           data: Object.values(stats.daily),
-          borderColor: "#0EA5E9",
-          backgroundColor: "rgba(14,165,233,0.08)",
+          borderColor: "#111827",
+          backgroundColor: "rgba(17,24,39,0.04)",
           fill: true,
-          tension: 0.35,
-          pointRadius: 3,
-          pointBackgroundColor: "#0EA5E9",
+          tension: 0.3,
+          pointRadius: 2,
+          pointBackgroundColor: "#111827",
         }],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
-          y: { beginAtZero: true, ticks: { color: "#94A3B8" }, grid: { color: "#F1F5F9" } },
-          x: { ticks: { color: "#94A3B8" }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { color: "#9CA3AF", font: { size: 11 } }, grid: { color: "#F3F4F6" } },
+          x: { ticks: { color: "#9CA3AF", font: { size: 11 } }, grid: { display: false } },
         },
       },
     })
@@ -144,11 +144,11 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="app-card p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Case Statistics</h2>
+      <div className="app-card p-5">
+        <h2 className="text-[15px] font-semibold text-gray-900 mb-3">Case Statistics</h2>
         <div className="space-y-2">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-14 rounded-xl bg-slate-100 animate-pulse-soft" />
+            <div key={i} className="h-12 rounded-md bg-gray-100 animate-pulse-soft" />
           ))}
         </div>
       </div>
@@ -157,54 +157,54 @@ export default function Dashboard() {
 
   if (error || !stats || (stats.total === 0 && Object.keys(stats.byCategory).length === 0)) {
     return (
-      <div className="app-card p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-2">Case Statistics</h2>
-        <p className="text-sm text-slate-400">{error ? `Couldn't load stats: ${error}` : "No statistics yet — submit a case to get started."}</p>
+      <div className="app-card p-5">
+        <h2 className="text-[15px] font-semibold text-gray-900 mb-2">Case Statistics</h2>
+        <p className="text-sm text-gray-400">{error ? `Couldn't load stats: ${error}` : "No statistics yet -- submit a case to get started."}</p>
       </div>
     )
   }
 
   return (
-    <div className="app-card p-6">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold text-slate-900">Case Statistics</h2>
-        <span className="pill pill-brand">Live</span>
+    <div className="app-card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-[15px] font-semibold text-gray-900">Case Statistics</h2>
+        <span className="text-xs text-gray-400">Live</span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
         <StatTile label="Total" value={stats.total} />
-        <StatTile label="Resolved" value={stats.resolved} accent="text-emerald-600" />
-        <StatTile label="Pending" value={stats.pending} accent="text-amber-600" />
+        <StatTile label="Resolved" value={stats.resolved} />
+        <StatTile label="Pending" value={stats.pending} />
         <StatTile
           label="Avg. Resolution"
-          value={insights ? `${insights.avg_resolution_time_days.toFixed(1)}d` : "—"}
+          value={insights ? `${insights.avg_resolution_time_days.toFixed(1)}d` : "-"}
         />
       </div>
 
       {insights?.top_category && (
-        <div className="mb-6 p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-          <span className="text-sm text-slate-500">Most common category</span>
+        <div className="mb-5 px-3 py-2.5 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-between">
+          <span className="text-[13px] text-gray-500">Most common category</span>
           <span className="flex items-center gap-2">
-            <span className="pill pill-brand">{insights.top_category}</span>
-            <span className="text-xs text-slate-400">{insights.top_category_count} case{insights.top_category_count === 1 ? "" : "s"}</span>
+            <span className="tag">{insights.top_category}</span>
+            <span className="text-xs text-gray-400">{insights.top_category_count} case{insights.top_category_count === 1 ? "" : "s"}</span>
           </span>
         </div>
       )}
 
-      <div className="space-y-6">
-        <ChartBlock title="Cases by Category"><canvas ref={categoryChartRef} className="max-h-56" /></ChartBlock>
-        <ChartBlock title="Cases by Priority"><canvas ref={priorityChartRef} className="max-h-56" /></ChartBlock>
-        <ChartBlock title="Daily Volume"><canvas ref={dailyChartRef} className="max-h-56" /></ChartBlock>
+      <div className="space-y-5">
+        <ChartBlock title="Cases by Category"><canvas ref={categoryChartRef} className="max-h-52" /></ChartBlock>
+        <ChartBlock title="Cases by Priority"><canvas ref={priorityChartRef} className="max-h-52" /></ChartBlock>
+        <ChartBlock title="Daily Volume"><canvas ref={dailyChartRef} className="max-h-52" /></ChartBlock>
       </div>
     </div>
   )
 }
 
-function StatTile({ label, value, accent }: { label: string; value: number | string; accent?: string }) {
+function StatTile({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-      <p className="text-xs text-slate-400 mb-1">{label}</p>
-      <p className={`text-xl font-semibold ${accent ?? "text-slate-900"}`}>{value}</p>
+    <div className="p-3 bg-gray-50 rounded-md border border-gray-100">
+      <p className="text-[11px] text-gray-400 mb-0.5">{label}</p>
+      <p className="text-lg font-semibold text-gray-900">{value}</p>
     </div>
   )
 }
@@ -212,8 +212,8 @@ function StatTile({ label, value, accent }: { label: string; value: number | str
 function ChartBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">{title}</h3>
-      <div className="w-full h-56">{children}</div>
+      <h3 className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">{title}</h3>
+      <div className="w-full h-52">{children}</div>
     </div>
   )
 }

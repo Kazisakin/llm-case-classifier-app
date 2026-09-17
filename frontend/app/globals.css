@@ -1,24 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f4f6f9;
+  --bg: #f9fafb;
   --surface: #ffffff;
-  --surface-muted: #f8fafc;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --brand: #0ea5e9;
-  --brand-dark: #0284c7;
-  --brand-light: #38bdf8;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --text-faint: #9ca3af;
+  --accent: #111827;
+  --accent-hover: #000000;
+  --focus: #2563eb;
   --success: #16a34a;
-  --success-bg: #dcfce7;
   --danger: #dc2626;
-  --danger-bg: #fee2e2;
-  --warning: #ca8a04;
-  --warning-bg: #fef9c3;
-  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.04);
-  --shadow-md: 0 4px 16px -4px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.04);
-  --shadow-lg: 0 12px 32px -8px rgb(15 23 42 / 0.12), 0 4px 8px -4px rgb(15 23 42 / 0.06);
+  --warning: #d97706;
+  --neutral: #9ca3af;
 }
 
 body {
@@ -27,47 +22,44 @@ body {
 }
 
 @keyframes slide-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from { transform: translateY(-6px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 .animate-slide-in {
-  animation: slide-in 0.25s ease-out;
+  animation: slide-in 0.18s ease-out;
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .animate-fade-in {
-  animation: fade-in 0.35s ease-out;
+  animation: fade-in 0.2s ease-out;
 }
 
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.55; }
 }
 .animate-pulse-soft {
   animation: pulse-soft 1.4s ease-in-out infinite;
 }
 
-/* Shared "card" surface used across the app */
+/* Flat card surface -- thin border, no shadow, sharp-ish corners */
 .app-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  box-shadow: var(--shadow-md);
+  border-radius: 8px;
 }
 
-/* Status / priority / category pill badges */
+/* Status/priority shown as a small dot + plain text, no colored backgrounds */
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.2rem 0.65rem;
-  border-radius: 9999px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
   white-space: nowrap;
 }
 .pill-dot {
@@ -76,29 +68,31 @@ body {
   border-radius: 9999px;
   flex-shrink: 0;
 }
+.dot-success { background: var(--success); }
+.dot-danger { background: var(--danger); }
+.dot-warning { background: var(--warning); }
+.dot-neutral { background: var(--neutral); }
+.dot-accent { background: var(--focus); }
 
-.pill-success { background: var(--success-bg); color: #15803d; }
-.pill-success .pill-dot { background: var(--success); }
+/* Category/priority shown as a plain bordered tag, not a colored badge */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--surface);
+}
 
-.pill-danger { background: var(--danger-bg); color: #b91c1c; }
-.pill-danger .pill-dot { background: var(--danger); }
-
-.pill-warning { background: var(--warning-bg); color: #a16207; }
-.pill-warning .pill-dot { background: var(--warning); }
-
-.pill-neutral { background: #e2e8f0; color: #334155; }
-.pill-neutral .pill-dot { background: #64748b; }
-
-.pill-brand { background: #e0f2fe; color: #0369a1; }
-.pill-brand .pill-dot { background: var(--brand); }
-
-/* Custom thin scrollbar for table containers */
 .thin-scroll::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
+  height: 6px;
+  width: 6px;
 }
 .thin-scroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d1d5db;
   border-radius: 9999px;
 }
 .thin-scroll::-webkit-scrollbar-track {
