@@ -4,77 +4,92 @@ import Chart from "chart.js/auto"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://llm-case-classifier-app.onrender.com"
 
+type Stats = {
+  total: number
+  resolved: number
+  pending: number
+  byCategory: { [key: string]: number }
+  byPriority: { [key: string]: number }
+  daily: { [key: string]: number }
+}
+
+type Insights = {
+  avg_resolution_time_days: number
+  top_category: string | null
+  top_category_count: number
+}
+
 export default function Dashboard() {
-  const [stats, setStats] = useState<{
-    total: number
-    resolved: number
-    pending: number
-    byCategory: { [key: string]: number }
-    byPriority: { [key: string]: number }
-    daily: { [key: string]: number }
-  } | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [insights, setInsights] = useState<Insights | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const categoryChartRef = useRef<HTMLCanvasElement>(null)
   const priorityChartRef = useRef<HTMLCanvasElement>(null)
   const dailyChartRef = useRef<HTMLCanvasElement>(null)
-  const [charts, setCharts] = useState<{ category?: Chart; priority?: Chart; daily?: Chart }>({})
+  const chartsRef = useRef<{ category?: Chart; priority?: Chart; daily?: Chart }>({})
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchAll = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${BASE_URL}/cases/stats`)
-        if (!res.ok) {
-          const errorText = await res.text()
-          throw new Error(`Failed to fetch stats: ${res.status} ${errorText}`)
+        const [statsRes, insightsRes] = await Promise.all([
+          fetch(`${BASE_URL}/cases/stats`),
+          fetch(`${BASE_URL}/cases/insights`),
+        ])
+        if (!statsRes.ok) {
+          const errorText = await statsRes.text()
+          throw new Error(`Failed to fetch stats: ${statsRes.status} ${errorText}`)
         }
-        const data = await res.json()
-        console.log("Stats API response:", data)
+        const statsData = await statsRes.json()
         setStats({
-          total: data.total ?? 0,
-          resolved: data.resolved ?? 0,
-          pending: data.pending ?? 0,
-          byCategory: data.byCategory ?? {},
-          byPriority: data.byPriority ?? {},
-          daily: data.daily ?? {},
+          total: statsData.total ?? 0,
+          resolved: statsData.resolved ?? 0,
+          pending: statsData.pending ?? 0,
+          byCategory: statsData.byCategory ?? {},
+          byPriority: statsData.byPriority ?? {},
+          daily: statsData.daily ?? {},
         })
+
+        if (insightsRes.ok) {
+          const insightsData = await insightsRes.json()
+          setInsights(insightsData)
+        }
         setError(null)
       } catch (err: unknown) {
         console.error("Fetch stats error:", err)
         setError(err instanceof Error ? err.message : "Failed to load statistics")
-        setStats({
-          total: 0,
-          resolved: 0,
-          pending: 0,
-          byCategory: {},
-          byPriority: {},
-          daily: {},
-        })
+        setStats({ total: 0, resolved: 0, pending: 0, byCategory: {}, byPriority: {}, daily: {} })
       } finally {
         setLoading(false)
       }
     }
-    fetchStats()
+    fetchAll()
   }, [])
 
   useEffect(() => {
     if (loading || !stats || !categoryChartRef.current || !priorityChartRef.current || !dailyChartRef.current) return
+
+    Object.values(chartsRef.current).forEach((c) => c?.destroy())
 
     const categoryChart = new Chart(categoryChartRef.current, {
       type: "bar",
       data: {
         labels: Object.keys(stats.byCategory),
         datasets: [{
-          label: "Cases by Category",
+          label: "Cases",
           data: Object.values(stats.byCategory),
           backgroundColor: "#0EA5E9",
-          borderRadius: 4,
+          borderRadius: 6,
+          maxBarThickness: 28,
         }],
       },
       options: {
-        scales: { y: { beginAtZero: true, ticks: { color: "#1E293B" } }, x: { ticks: { color: "#1E293B" } } },
-        plugins: { legend: { labels: { color: "#1E293B" } } },
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: "#94A3B8" }, grid: { color: "#F1F5F9" } },
+          x: { ticks: { color: "#94A3B8" }, grid: { display: false } },
+        },
       },
     })
 
@@ -83,12 +98,15 @@ export default function Dashboard() {
       data: {
         labels: Object.keys(stats.byPriority),
         datasets: [{
-          label: "Cases by Priority",
           data: Object.values(stats.byPriority),
-          backgroundColor: ["#22C55E", "#0EA5E9", "#EF4444"],
+          backgroundColor: ["#EF4444", "#F59E0B", "#22C55E"],
+          borderWidth: 0,
         }],
       },
-      options: { plugins: { legend: { labels: { color: "#1E293B" } } } },
+      options: {
+        plugins: { legend: { position: "bottom", labels: { color: "#64748B", boxWidth: 10, padding: 12 } } },
+        cutout: "65%",
+      },
     })
 
     const dailyChart = new Chart(dailyChartRef.current, {
@@ -99,18 +117,23 @@ export default function Dashboard() {
           label: "Daily Cases",
           data: Object.values(stats.daily),
           borderColor: "#0EA5E9",
-          backgroundColor: "#0EA5E9",
-          fill: false,
-          tension: 0.3,
+          backgroundColor: "rgba(14,165,233,0.08)",
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: "#0EA5E9",
         }],
       },
       options: {
-        scales: { y: { beginAtZero: true, ticks: { color: "#1E293B" } }, x: { ticks: { color: "#1E293B" } } },
-        plugins: { legend: { labels: { color: "#1E293B" } } },
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: "#94A3B8" }, grid: { color: "#F1F5F9" } },
+          x: { ticks: { color: "#94A3B8" }, grid: { display: false } },
+        },
       },
     })
 
-    setCharts({ category: categoryChart, priority: priorityChart, daily: dailyChart })
+    chartsRef.current = { category: categoryChart, priority: priorityChart, daily: dailyChart }
 
     return () => {
       categoryChart.destroy()
@@ -121,55 +144,76 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-white rounded-xl shadow-md">
-        <h1 className="text-xl font-bold text-[#38BDF8] mb-6">Case Statistics</h1>
-        <p className="text-sm text-[#1E293B]">Loading statistics...</p>
+      <div className="app-card p-6">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Case Statistics</h2>
+        <div className="space-y-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-14 rounded-xl bg-slate-100 animate-pulse-soft" />
+          ))}
+        </div>
       </div>
     )
   }
 
   if (error || !stats || (stats.total === 0 && Object.keys(stats.byCategory).length === 0)) {
     return (
-      <div className="p-6 bg-white rounded-xl shadow-md">
-        <h1 className="text-xl font-bold text-[#38BDF8] mb-6">Case Statistics</h1>
-        <p className="text-sm text-[#EF4444]">{error || "No statistics available. Try submitting a case."}</p>
+      <div className="app-card p-6">
+        <h2 className="text-lg font-semibold text-slate-900 mb-2">Case Statistics</h2>
+        <p className="text-sm text-slate-400">{error ? `Couldn't load stats: ${error}` : "No statistics yet — submit a case to get started."}</p>
       </div>
     )
   }
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow-md">
-      <h1 className="text-xl font-bold text-[#38BDF8] mb-6">Case Statistics</h1>
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 bg-[#F1F5F9] rounded-lg">
-            <h3 className="text-sm font-medium text-[#38BDF8]">Total Cases</h3>
-            <p className="text-xl font-semibold text-[#1E293B]">{stats.total}</p>
-          </div>
-          <div className="p-4 bg-[#F1F5F9] rounded-lg">
-            <h3 className="text-sm font-medium text-[#38BDF8]">Resolved Cases</h3>
-            <p className="text-xl font-semibold text-[#1E293B]">{stats.resolved}</p>
-          </div>
-          <div className="p-4 bg-[#F1F5F9] rounded-lg">
-            <h3 className="text-sm font-medium text-[#38BDF8]">Pending Cases</h3>
-            <p className="text-xl font-semibold text-[#1E293B]">{stats.pending}</p>
-          </div>
-        </div>
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-sm font-medium text-[#38BDF8] mb-2">Cases by Category</h3>
-            <canvas ref={categoryChartRef} className="max-h-64"></canvas>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-[#38BDF8] mb-2">Cases by Priority</h3>
-            <canvas ref={priorityChartRef} className="max-h-64"></canvas>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-[#38BDF8] mb-2">Daily Cases</h3>
-            <canvas ref={dailyChartRef} className="max-h-64"></canvas>
-          </div>
-        </div>
+    <div className="app-card p-6">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-lg font-semibold text-slate-900">Case Statistics</h2>
+        <span className="pill pill-brand">Live</span>
       </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <StatTile label="Total" value={stats.total} />
+        <StatTile label="Resolved" value={stats.resolved} accent="text-emerald-600" />
+        <StatTile label="Pending" value={stats.pending} accent="text-amber-600" />
+        <StatTile
+          label="Avg. Resolution"
+          value={insights ? `${insights.avg_resolution_time_days.toFixed(1)}d` : "—"}
+        />
+      </div>
+
+      {insights?.top_category && (
+        <div className="mb-6 p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <span className="text-sm text-slate-500">Most common category</span>
+          <span className="flex items-center gap-2">
+            <span className="pill pill-brand">{insights.top_category}</span>
+            <span className="text-xs text-slate-400">{insights.top_category_count} case{insights.top_category_count === 1 ? "" : "s"}</span>
+          </span>
+        </div>
+      )}
+
+      <div className="space-y-6">
+        <ChartBlock title="Cases by Category"><canvas ref={categoryChartRef} className="max-h-56" /></ChartBlock>
+        <ChartBlock title="Cases by Priority"><canvas ref={priorityChartRef} className="max-h-56" /></ChartBlock>
+        <ChartBlock title="Daily Volume"><canvas ref={dailyChartRef} className="max-h-56" /></ChartBlock>
+      </div>
+    </div>
+  )
+}
+
+function StatTile({ label, value, accent }: { label: string; value: number | string; accent?: string }) {
+  return (
+    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+      <p className="text-xs text-slate-400 mb-1">{label}</p>
+      <p className={`text-xl font-semibold ${accent ?? "text-slate-900"}`}>{value}</p>
+    </div>
+  )
+}
+
+function ChartBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">{title}</h3>
+      <div className="w-full h-56">{children}</div>
     </div>
   )
 }
