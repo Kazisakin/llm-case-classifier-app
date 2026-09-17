@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
-from openai import OpenAI
+import anthropic
 from dotenv import load_dotenv
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -12,7 +12,8 @@ from schemas import CaseRequest, CaseResponse, CaseOut
 from logic import handle_category, send_email_notification
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+CLAUDE_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
 
 Base.metadata.create_all(bind=engine)
 
@@ -36,16 +37,16 @@ def get_db():
 @app.post("/classify-case", response_model=CaseResponse)
 async def classify_case(case: CaseRequest, db: Session = Depends(get_db)):
     try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+        response = client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=10,
+            temperature=0,
+            system="Classify the case into exactly one of these labels and reply with only the label, nothing else: Fraud, Account Access, Verification, General Inquiry.",
             messages=[
-                {"role": "system", "content": "Classify the case into one of: Fraud, Account Access, Verification, General Inquiry."},
                 {"role": "user", "content": case.description}
             ],
-            max_tokens=10,
-            temperature=0
         )
-        category = response.choices[0].message.content.strip()
+        category = response.content[0].text.strip()
         status = handle_category(category)
         new_case = Case(
             description=case.description,

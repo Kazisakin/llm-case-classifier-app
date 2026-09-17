@@ -1,5 +1,7 @@
-.env
 __pycache__/
+*.pyc
+.pytest_cache/
+.env
 cases.db
 cases.db-journal
-.pytest_cache/
+utils/tests/

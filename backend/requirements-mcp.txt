@@ -1,0 +1,4 @@
+# Extra deps for mcp_server.py — install alongside requirements.txt.
+# Not needed for the deployed FastAPI service itself.
+mcp>=2.0.0
+httpx>=0.28.1

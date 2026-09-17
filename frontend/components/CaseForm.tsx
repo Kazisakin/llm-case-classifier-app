@@ -13,7 +13,7 @@ type Case = {
   escalation_level: number
 }
 
-const BASE_URL = "https://llm-case-classifier-app.onrender.com"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://llm-case-classifier-app.onrender.com"
 
 export default function CaseForm() {
   const [description, setDescription] = useState("")

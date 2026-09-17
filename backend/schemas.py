@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
 from datetime import datetime
 
 class CaseRequest(BaseModel):
@@ -6,7 +6,8 @@ class CaseRequest(BaseModel):
     email: EmailStr
     priority: str
 
-    @validator("priority")
+    @field_validator("priority")
+    @classmethod
     def validate_priority(cls, v):
         if v not in ["Low", "Medium", "High"]:
             raise ValueError("Priority must be Low, Medium, or High")
@@ -18,6 +19,8 @@ class CaseResponse(BaseModel):
     escalation_level: int
 
 class CaseOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     description: str
     email: str
@@ -27,6 +30,3 @@ class CaseOut(BaseModel):
     created_at: datetime
     resolved_at: datetime | None
     escalation_level: int
-
-    class Config:
-        orm_mode = True
